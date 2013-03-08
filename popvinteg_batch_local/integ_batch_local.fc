@@ -1,0 +1,13 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+# popvinteg-batch
+
+/var/lib/popvinteg-batch/popvinteg-batch-jobs.jar -- gen_context(system_u:object_r:integ_batch_exec_t,s0)
+/etc/rc.d/init.d/popvinteg-batch-ha.sh -- gen_context(system_u:object_r:integ_batch_initrc_exec_t,s0)
+/etc/rc.d/init.d/popvinteg-batch.sh -- gen_context(system_u:object_r:integ_batch_initrc_exec_t,s0)
+/etc/rc.d/init.d/popvinteg-batch-mock.sh -- gen_context(system_u:object_r:integ_batch_initrc_exec_t,s0)
+/etc/rc.d/init.d/popvinteg-batch-test-prod.sh -- gen_context(system_u:object_r:integ_batch_initrc_exec_t,s0)
+
+/var/lib/popvinteg-batch[^/]*(/.*)? gen_context(system_u:object_r:integ_batch_var_lib_t,s0)

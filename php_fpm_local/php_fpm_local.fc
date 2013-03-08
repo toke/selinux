@@ -1,0 +1,11 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+/etc/rc.d/init.d/php-fpm    --  gen_context(system_u:object_r:phpfpm_initrc_exec_t,s0)
+/usr/sbin/php-fpm           --  gen_context(system_u:object_r:phpfpm_exec_t,s0)
+
+/etc/php-fpm.conf           --  gen_context(system_u:object_r:phpfpm_etc_t,s0)
+/etc/php-fpm.d(/.*)?            gen_context(system_u:object_r:phpfpm_etc_t,s0)
+
+/var/log/php-fpm(/.*)?          gen_context(system_u:object_r:phpfpm_log_t,s0)

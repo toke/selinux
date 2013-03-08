@@ -1,0 +1,10 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+# Apache-James
+/var/lib/apache-james/bin/wrapper-linux-x86-32 -- gen_context(system_u:object_r:ApacheJames_exec_t,s0)
+/var/lib/apache-james/bin/wrapper-linux-x86-64 -- gen_context(system_u:object_r:ApacheJames_exec_t,s0)
+/etc/rc.d/init.d/james -- gen_context(system_u:object_r:ApacheJames_initrc_exec_t,s0)
+
+/var/lib/apache-james[^/]*(/.*)? gen_context(system_u:object_r:ApacheJames_var_lib_t,s0)

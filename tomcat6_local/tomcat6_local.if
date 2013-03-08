@@ -1,0 +1,216 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+## <summary>policy for tomcat6</summary>
+
+
+#########################################
+## <summary>
+###      Transition to tomcat6.
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition.
+## </summary>
+## </param>
+##
+#
+
+interface(`tomcat6_domtrans',`
+    gen_require(`
+            type tomcat6_t, tomcat6_exec_t;
+    ')
+
+    corecmd_search_var_lib($1)
+            domtrans_pattern($1, tomcat6_exec_t, tomcat6_t)
+')
+
+
+########################################
+## <summary>
+##	Execute tomcat6 server in the tomcat6 domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_initrc_domtrans',`
+	gen_require(`
+		type tomcat6_initrc_exec_t;
+	')
+
+	init_labeled_script_domtrans($1, tomcat6_initrc_exec_t)
+')
+
+
+########################################
+## <summary>
+##	Search tomcat6 lib directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_search_lib',`
+	gen_require(`
+		type tomcat6_var_lib_t;
+	')
+
+	allow $1 tomcat6_var_lib_t:dir search_dir_perms;
+	files_search_var_lib($1)
+')
+
+########################################
+## <summary>
+##	Read tomcat6 lib files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_read_lib_files',`
+	gen_require(`
+		type tomcat6_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	read_files_pattern($1, tomcat6_var_lib_t, tomcat6_var_lib_t)
+')
+
+########################################
+## <summary>
+##	Manage tomcat6 lib files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_manage_lib_files',`
+	gen_require(`
+		type tomcat6_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	manage_files_pattern($1, tomcat6_var_lib_t, tomcat6_var_lib_t)
+')
+
+########################################
+## <summary>
+##	Manage tomcat6 lib directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_manage_lib_dirs',`
+	gen_require(`
+		type tomcat6_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	manage_dirs_pattern($1, tomcat6_var_lib_t, tomcat6_var_lib_t)
+')
+
+
+########################################
+## <summary>
+##	Execute tomcat6 in the tomcat6 domain, and
+##	allow the specified role the tomcat6 domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	The role to be allowed the tomcat6 domain.
+##	</summary>
+## </param>
+#
+interface(`tomcat6_run',`
+	gen_require(`
+		type tomcat6_t;
+	')
+
+	tomcat6_domtrans($1)
+	role $2 types tomcat6_t;
+')
+
+########################################
+## <summary>
+##	Role access for tomcat6
+## </summary>
+## <param name="role">
+##	<summary>
+##	Role allowed access
+##	</summary>
+## </param>
+## <param name="domain">
+##	<summary>
+##	User domain for the role
+##	</summary>
+## </param>
+#
+interface(`tomcat6_role',`
+	gen_require(`
+		type tomcat6_t;
+	')
+
+	role $1 types tomcat6_t;
+
+	tomcat6_domtrans($2)
+
+	ps_process_pattern($2, tomcat6_t)
+	allow $2 tomcat6_t:process signal;
+')
+
+
+########################################
+## <summary>
+##	All of the rules required to administrate
+##	an tomcat6 environment
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`tomcat6_admin',`
+	gen_require(`
+		type tomcat6_t;
+	type tomcat6_initrc_exec_t;
+	type tomcat6_var_lib_t;
+	')
+
+	allow $1 tomcat6_t:process { ptrace signal_perms };
+	ps_process_pattern($1, tomcat6_t)
+
+	tomcat6_initrc_domtrans($1)
+	domain_system_change_exemption($1)
+	role_transition $2 tomcat6_initrc_exec_t system_r;
+	allow $2 system_r;
+
+	files_search_var_lib($1)
+	admin_pattern($1, tomcat6_var_lib_t)
+
+')

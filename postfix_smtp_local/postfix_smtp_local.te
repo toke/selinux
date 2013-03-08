@@ -1,0 +1,10 @@
+
+module postfix_smtp_local 1.0;
+
+require {
+	type postfix_smtp_t;
+	type postfix_spool_maildrop_t;
+	class file { execute read lock execute_no_trans write getattr open };
+}
+
+allow postfix_smtp_t postfix_spool_maildrop_t:file { read write getattr open lock };

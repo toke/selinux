@@ -1,0 +1,17 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+
+# tomcat6
+/var/lib/tomcat6/bin/catalina.sh -- gen_context(system_u:object_r:tomcat6_exec_t,s0)
+/etc/rc.d/init.d/tomcat6-main	-- gen_context(system_u:object_r:tomcat6_initrc_exec_t,s0)
+/etc/rc.d/init.d/tomcat6-test   -- gen_context(system_u:object_r:tomcat6_initrc_exec_t,s0)
+/etc/rc.d/init.d/tomcat6-mock   -- gen_context(system_u:object_r:tomcat6_initrc_exec_t,s0)
+/etc/rc.d/init.d/tomcat6        -- gen_context(system_u:object_r:tomcat6_initrc_exec_t,s0)
+
+/var/lib/tomcat6(/.*)?          gen_context(system_u:object_r:tomcat6_var_lib_t,s0)
+
+/var/lib/tomcat6_b[^/]*(/.*)?       gen_context(system_u:object_r:tomcat6_var_lib_t,s0)
+
+/var/lib/apache-tomcat-[^/]*(/.*)?      gen_context(system_u:object_r:tomcat6_var_lib_t,s0)

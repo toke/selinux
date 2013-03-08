@@ -1,0 +1,183 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+
+## <summary> Policy for apache-james </summary>
+
+#########################################
+## <summary>
+##      Transition to apache-james.
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`ApacheJames_domtrans',`
+    gen_require(`
+          type ApacheJames_t, ApacheJames_exec_t;
+    ')
+
+    corecmd_search_var_lib($1)
+    domtrans_pattern($1, ApacheJames_exec_t, ApacheJames_t)
+    ')
+
+#################################################
+## <summary>
+##      Execute apache-james server in 
+##      apache-james domain
+## </summary>
+## <param name=domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`ApacheJames_initrc_domtrans',`
+    gen_require(`
+        type ApacheJames_initrc_exec_t;
+    ')
+
+    init_labeled_script_domtrans($1, ApacheJames_initrc_exec_t)
+')
+
+##################################################
+## <summary>
+##      Search /var/lib/apache-j*
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access## </summary>
+## </param>
+#
+interface(`ApacheJames_search_lib',`
+    gen_require(`
+        type ApacheJames_var_lib_t;
+    ')
+
+    allow $1 ApacheJames_var_lib_t:dir search_dir_perms;
+    files_search_var_lib($1)
+')
+
+##################################################
+## <summary>
+##      Read /var/lib/apache-j*
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`ApacheJames_read_lib_files',`
+    gen_require(`
+        type ApacheJames_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    read_files_pattern($1, ApacheJames_var_lib_t, ApacheJames_var_lib_t)
+')
+
+#################################################
+## <summary>
+##      Manage /var/lib/apache-j* files
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`ApacheJames_manage_lib_files',`
+    gen_require(`
+        type ApacheJames_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    manage_files_pattern($1, ApacheJames_var_lib_t, ApacheJames_var_lib_t)
+')
+
+###############################################
+## <summary>
+##      manage /var/lib/apache-j* dirs
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`ApacheJames_manage_lib_dirs',`
+    gen_require(`
+        type ApacheJames_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    manage_dirs_pattern($1, ApacheJames_var_lib_t, ApacheJames_var_lib_t)
+')
+
+###############################################
+## <summary>
+##      Execute apache-james in apache-james
+##      domain and allow the specific role to
+##      apache-james domain
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      The role allowed to access apache-james
+##      domain
+## </summary>
+## </param>
+#
+interace(`ApacheJames_run',`
+    gen_require(`
+        type ApacheJames_t;
+    ')
+
+    ApacheJames_domtrans($1)
+    role $2 types ApacheJames_t;
+')
+
+###############################################
+## <summary>
+##      All of the rules required to administrate
+##      an apache-james environment
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access.
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      Role allowed access.
+## </summary>
+## </param>
+## <rolecap/>
+#
+interface(`ApacheJames_admin',`
+    gen_require(`
+        type ApacheJames_t;
+        type ApacheJames_initrc_exec_t;
+        type ApacheJames_var_lib_t;
+    ')
+
+    allow $1 ApacheJames_t:process { ptrace signal_perms };
+    ps_process_pattern($1, ApacheJames_t)
+
+    ApacheJames_initrc_domtrans($1)
+    domain_system_change_exemption($1)
+    role_transition $2 ApacheJames_initrc_exec_t system_r;
+    allow $2 system_r;
+
+    files_search_var_lib($1)
+    admin_pattern($1, ApacheJames_var_lib_t)
+')

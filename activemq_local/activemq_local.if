@@ -1,0 +1,184 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+
+## <summary> Policy for activemq </summary>
+
+########################################
+### <summary>
+###      Transition to activemq.
+### </summary>
+### <param name="domain">
+### <summary>
+###      Domain allowed to transition.
+### </summary>
+### </param>
+##
+interface(`activemq_domtrans',`
+    gen_require(`
+            type activemq_t, activemq_exec_t;
+    ')
+
+    files_search_usr($1)
+    domtrans_pattern($1, activemq_exec_t, activemq_t)
+')
+
+#################################################
+## <summary>
+##      Execute activemq server in 
+##      activemq domain
+## </summary>
+## <param name=domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`activemq_initrc_domtrans',`
+    gen_require(`
+        type activemq_initrc_exec_t;
+    ')
+
+    init_labeled_script_domtrans($1, activemq_initrc_exec_t)
+')
+
+##################################################
+## <summary>
+##      Search /opt/activemq*
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`activemq_search_opt',`
+    gen_require(`
+        type activemq_opt_t;
+    ')
+
+    allow $1 activemq_opt_t:dir search_dir_perms;
+    files_search_usr($1)
+')
+
+##################################################
+## <summary>
+##      Read /opt/activemq*
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`activemq_read_opt',`
+    gen_require(`
+        type activemq_opt_t;
+    ')
+
+    files_search_usr($1)
+    read_files_pattern($1, activemq_opt_t, activemq_opt_t)
+')
+
+#################################################
+## <summary>
+##      Manage /opt/activemq* files
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`activemq_manage_opt_files',`
+    gen_require(`
+        type activemq_opt_t;
+    ')
+
+    files_search_urs($1)
+    manage_files_pattern($1, activemq_opt_t, activemq_opt_t)
+')
+
+###############################################
+## <summary>
+##      manage /opt/activemq* dirs
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`activemq_manage_opt_dirs',`
+    gen_require(`
+        type activemq_opt_t;
+    ')
+
+    files_search_usr($1)
+    manage_dirs_pattern($1, activemq_opt_t, activemq_opt_t)
+')
+
+###############################################
+## <summary>
+##      Execute activemq in activemq
+##      domain and allow the specific role to
+##      activemq domain
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      The role allowed to access activemq
+##      domain
+## </summary>
+## </param>
+#
+interace(`activemq_run',`
+    gen_require(`
+        type activemq_t;
+    ')
+
+    activemq_domtrans($1)
+    role $2 types activemq_t;
+')
+
+###############################################
+## <summary>
+##      All of the rules required to administrate
+##      an apache-james environment
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access.
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      Role allowed access.
+## </summary>
+## </param>
+## <rolecap/>
+#
+interface(`activemq_admin',`
+    gen_require(`
+        type activemq_t;
+        type activemq_initrc_exec_t;
+        type activemq_opt_t;
+    ')
+
+    allow $1 activemq_t:process { ptrace signal_perms };
+    ps_process_pattern($1, activemq_t)
+
+    activemq_initrc_domtrans($1)
+    domain_system_change_exemption($1)
+    role_transition $2 activemq_initrc_exec_t system_r;
+    allow $2 system_r;
+
+    files_search_usr($1)
+    admin_pattern($1, activemq_opt_t)
+')

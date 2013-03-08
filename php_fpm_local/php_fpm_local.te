@@ -1,0 +1,137 @@
+policy_module(php_fpm_local 0.1.5)
+
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+#####################################################
+#
+# Requires
+#
+require {
+    type phpfpm_t;
+    type file_t;
+    type httpd_var_run_t;
+    type locale_t;
+    type mysqld_port_t;
+    type node_t;
+    type port_t;
+    type proc_t;
+    type sysctl_kernel_t;
+    type urandom_device_t;
+    type var_run_t;
+    type bin_t;
+    type shell_exec_t;
+    type devlog_t;
+    type postfix_postdrop_exec_t;
+    type postfix_public_t;
+    type postfix_spool_maildrop_t;
+    type postfix_spool_t;
+    type sendmail_exec_t;
+    type syslogd_t;
+    type var_spool_t;
+    type smtp_port_t;
+    type phpfpm_exec_t;
+    type tmp_t;
+    type fonts_cache_t;
+    type fonts_t;
+    type ldap_port_t;
+    class dir { write search add_name read open getattr remove_name };
+    class file { write getattr read lock create open unlink execute execute_no_trans rename setattr append };
+    class capability { sys_ptrace setuid sys_nice setgid kill };
+    class netlink_route_socket { bind create getattr nlmsg_read };
+    class process { ptrace setsched signal sigkill setrlimit };
+    class tcp_socket { setopt bind create accept connect shutdown getopt listen node_bind name_bind ioctl name_connect };
+    class udp_socket { ioctl create connect getattr };
+    class chr_file { read open getattr };
+    class lnk_file { read };
+    class fifo_file { read write getattr ioctl open };
+    class sock_file { write create unlink };
+}
+
+
+#####################################################
+#
+# Declarations
+#
+type phpfpm_t;
+type phpfpm_exec_t;
+init_daemon_domain(phpfpm_t, phpfpm_exec_t)
+
+permissive phpfpm_t;
+
+type phpfpm_initrc_exec_t;
+init_script_file(phpfpm_initrc_exec_t)
+
+type phpfpm_etc_t;
+files_type(phpfpm_etc_t)
+
+type phpfpm_log_t;
+logging_log_file(phpfpm_log_t)
+
+
+#####################################################
+#
+# php-fpm local policy
+# 
+manage_dirs_pattern(phpfpm_t, phpfpm_etc_t, phpfpm_etc_t)
+manage_files_pattern(phpfpm_t, phpfpm_etc_t, phpfpm_etc_t)
+files_etc_filetrans(phpfpm_t, phpfpm_etc_t, { dir file })
+
+manage_dirs_pattern(phpfpm_t, phpfpm_log_t, phpfpm_log_t)
+manage_files_pattern(phpfpm_t, phpfpm_log_t, phpfpm_log_t)
+logging_log_filetrans(phpfpm_t, phpfpm_log_t, { dir file })
+
+files_read_etc_files(phpfpm_t)
+files_read_usr_files(phpfpm_t)
+files_rw_pid_dirs(phpfpm_t)
+
+apache_list_sys_content(phpfpm_t)
+apache_manage_sys_content(phpfpm_t)
+
+corenet_tcp_connect_http_port(phpfpm_t)
+corenet_tcp_connect_memcache_port(phpfpm_t)
+sysnet_read_config(phpfpm_t)
+
+allow phpfpm_t httpd_var_run_t:dir { write search add_name open remove_name read };
+allow phpfpm_t httpd_var_run_t:file { write getattr read lock create open unlink };
+allow phpfpm_t locale_t:dir { read search open getattr };
+allow phpfpm_t locale_t:file { read getattr open };
+allow phpfpm_t mysqld_port_t:tcp_socket name_connect;
+allow phpfpm_t node_t:tcp_socket node_bind;
+allow phpfpm_t port_t:tcp_socket { name_bind name_connect };
+allow phpfpm_t proc_t:file { read getattr open };
+allow phpfpm_t self:capability { sys_ptrace setuid sys_nice setgid kill };
+allow phpfpm_t self:netlink_route_socket { bind create getattr nlmsg_read };
+allow phpfpm_t self:process { ptrace setrlimit setsched signal sigkill};
+allow phpfpm_t ldap_port_t:tcp_socket { name_connect bind accept connect };
+allow phpfpm_t self:tcp_socket { name_connect ioctl setopt bind create accept connect shutdown getopt listen };
+allow phpfpm_t self:udp_socket { getattr ioctl create connect };
+allow phpfpm_t self:fifo_file { read write getattr ioctl };
+allow phpfpm_t self:unix_dgram_socket { create connect };
+allow phpfpm_t shell_exec_t:file { read execute open getattr execute_no_trans };
+allow phpfpm_t sysctl_kernel_t:dir search;
+allow phpfpm_t sysctl_kernel_t:file read;
+allow phpfpm_t urandom_device_t:chr_file { read open getattr };
+allow phpfpm_t var_run_t:file { write create open unlink };
+allow phpfpm_t bin_t:file { read getattr open execute execute_no_trans };
+allow phpfpm_t bin_t:lnk_file read;
+allow phpfpm_t devlog_t:sock_file write;
+allow phpfpm_t postfix_postdrop_exec_t:file { read execute open execute_no_trans };
+allow phpfpm_t postfix_public_t:dir search;
+allow phpfpm_t postfix_public_t:fifo_file { write getattr open };
+allow phpfpm_t postfix_spool_maildrop_t:dir { write remove_name search add_name };
+allow phpfpm_t postfix_spool_maildrop_t:file { rename write getattr setattr read create open };
+allow phpfpm_t postfix_spool_t:dir search;
+allow phpfpm_t sendmail_exec_t:file { read execute open execute_no_trans };
+allow phpfpm_t syslogd_t:unix_dgram_socket sendto;
+allow phpfpm_t var_spool_t:dir search;
+allow phpfpm_t smtp_port_t:tcp_socket name_connect;
+allow phpfpm_t phpfpm_exec_t:file execute_no_trans;
+allow phpfpm_t tmp_t:dir { read write add_name remove_name };
+allow phpfpm_t tmp_t:file { setattr read lock create write getattr unlink open append };
+allow phpfpm_t tmp_t:sock_file { create unlink };
+allow phpfpm_t fonts_cache_t:dir { search setattr };
+allow phpfpm_t fonts_cache_t:file { read getattr open };
+allow phpfpm_t fonts_t:dir { read getattr open search };
+allow phpfpm_t fonts_t:file { read getattr open };

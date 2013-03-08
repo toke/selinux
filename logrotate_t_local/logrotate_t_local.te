@@ -1,0 +1,34 @@
+policy_module(logrotate_t_local, 0.0.4)
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+
+#####################################################
+#
+#   requirements
+#
+require {
+    type logrotate_t;
+    type nfs_t;
+    type tomcat6_var_lib_t;
+    type integ_batch_var_lib_t;
+    type default_t;
+    class dir { write remove_name add_name read write };
+    class file { rename create unlink open setattr read getattr write ioctl };
+    class lnk_file read;
+}
+
+#####################################################
+#
+#   logrotate_t_local policy
+#
+allow logrotate_t nfs_t:dir { write remove_name add_name };
+allow logrotate_t nfs_t:file { rename create unlink open setattr };
+allow logrotate_t tomcat6_var_lib_t:dir { read write add_name remove_name };
+allow logrotate_t tomcat6_var_lib_t:file { rename setattr read create getattr write ioctl unlink open };
+allow logrotate_t integ_batch_var_lib_t:dir read;
+allow logrotate_t integ_batch_var_lib_t:lnk_file read;
+#allow logrotate_t httpd_sys_content_t:dir { read write add_name remove_name };
+#allow logrotate_t httpd_sys_content_t:file { rename setattr read create getattr write ioctl unlink open };
+allow logrotate_t default_t:dir read;

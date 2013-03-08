@@ -1,0 +1,60 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+#      email: jani.heinonen@profitconsulting.fi
+#      phone: +358 50 313 4292
+#
+
+module MysqlNfs_local 1.0.4;
+
+
+require {
+    type mysqld_safe_t;
+    type mysqld_port_t;
+    type mysqld_t;
+    type nfsd_t;
+    type rpcd_t;
+    type fixed_disk_device_t;
+    type proc_kcore_t;
+    type corosync_t;
+    type console_device_t;
+    type fenced_t;
+    type file_t;
+    type tty_device_t;
+    type logrotate_t;
+    class process { siginh noatsecure rlimitinh };
+    class blk_file { read ioctl open };
+    class udp_socket listen;
+    class tcp_socket name_connect;
+    class file { create open getattr setattr read write append rename link unlink ioctl lock };
+    class dir { open read getattr lock search ioctl add_name remove_name write create rmdir };
+    class chr_file { read getattr } ;
+}
+# mysqld_safe_t
+allow mysqld_safe_t mysqld_t:process { siginh noatsecure rlimitinh };
+allow mysqld_safe_t file_t:dir { write add_name };
+allow mysqld_safe_t file_t:file { write ioctl setattr create open getattr append };
+
+# nfsd_t
+allow nfsd_t fixed_disk_device_t:blk_file { read ioctl open };
+allow nfsd_t proc_kcore_t:file getattr;
+allow nfsd_t self:udp_socket listen;
+
+# rpcd_t
+allow rpcd_t self:udp_socket listen;
+
+# corosync_t
+allow corosync_t console_device_t:chr_file read;
+
+# fenced
+allow fenced_t console_device_t:chr_file read;
+
+# file_t
+allow mysqld_t file_t:dir { create rmdir };
+
+# other rules
+files_manage_isid_type_files(mysqld_t)
+files_rw_isid_type_dirs(mysqld_t)
+allow logrotate_t file_t:dir { read remove_name write add_name };
+allow logrotate_t file_t:file { rename write getattr setattr read create open };
+allow logrotate_t mysqld_port_t:tcp_socket name_connect;
+allow logrotate_t tty_device_t:chr_file getattr;
+

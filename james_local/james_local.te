@@ -1,0 +1,38 @@
+policy_module(james_local, 0.0.1)
+
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+########################################
+#
+# requirements
+#
+require {
+    type unconfined_java_t;
+    type ApacheJames_t;
+}
+
+########################################
+#
+# Declarations
+#
+
+type ApacheJames_t;
+type ApacheJames_exec_t;
+init_daemon_domain(ApacheJames_t, ApacheJames_exec_t)
+
+permissive ApacheJames_t;
+
+type ApacheJames_initrc_exec_t;
+init_script_file(ApacheJames_initrc_exec_t)
+
+type ApacheJames_var_lib_t;
+files_type(ApacheJames_var_lib_t)
+
+###########################################
+# 
+# apache-james local policy
+#
+

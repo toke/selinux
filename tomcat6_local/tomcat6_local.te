@@ -1,0 +1,104 @@
+policy_module(tomcat6_local, 0.0.2)
+
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+########################################
+#
+# requirements
+#
+require {
+    type unconfined_java_t;
+    type tomcat6_t;
+    type etc_t;
+    type fs_t;
+    type home_root_t;
+    type initrc_t;
+    type initrc_tmp_t;
+    type ldap_port_t;
+    type locale_t;
+    type mysqld_port_t;
+    type net_conf_t;
+    type nfs_t;
+    type node_t;
+    type port_t;
+    type proc_net_t;
+    type proc_t;
+    type random_device_t;
+    type sysfs_t;
+    type tomcat6_exec_t;
+    type tomcat6_var_lib_t;
+    type urandom_device_t;
+    type user_home_dir_t;
+    type user_home_t;
+    type var_lib_t;
+    class file { read getattr open write create unlink execute_no_trans append };
+    class filesystem getattr;
+    class dir { write search read remove_name open getattr add_name add_name create };
+    class process { execmem signal signull };
+    class tcp_socket { node_bind name_connect name_bind setopt bind create getattr accept ioctl connect shutdown getopt listen };
+    class udp_socket { getattr ioctl create connect };
+    class chr_file { read getattr open };
+    class netlink_route_socket { bind create getattr nlmsg_read };
+    class lnk_file { read getattr };
+}
+
+########################################
+#
+# Declarations
+#
+
+type tomcat6_t;
+type tomcat6_exec_t;
+init_daemon_domain(tomcat6_t, tomcat6_exec_t)
+
+permissive tomcat6_t;
+
+type tomcat6_initrc_exec_t;
+init_script_file(tomcat6_initrc_exec_t)
+
+type tomcat6_var_lib_t;
+files_type(tomcat6_var_lib_t)
+
+
+########################################
+#
+# tomcat6 local policy
+#
+allow tomcat6_t etc_t:file { read getattr open };
+allow tomcat6_t fs_t:filesystem getattr;
+allow tomcat6_t home_root_t:dir search;
+allow tomcat6_t initrc_t:process signull;
+allow tomcat6_t initrc_tmp_t:dir { write search read remove_name open getattr add_name };
+allow tomcat6_t initrc_tmp_t:file { read write create unlink open };
+allow tomcat6_t ldap_port_t:tcp_socket name_connect;
+allow tomcat6_t locale_t:dir { read search open getattr };
+allow tomcat6_t locale_t:file { read getattr open };
+allow tomcat6_t mysqld_port_t:tcp_socket name_connect;
+allow tomcat6_t net_conf_t:file { read getattr open };
+allow tomcat6_t nfs_t:dir { write search add_name create getattr };
+allow tomcat6_t nfs_t:file { create open };
+allow tomcat6_t node_t:tcp_socket node_bind;
+allow tomcat6_t port_t:tcp_socket { name_bind name_connect };
+allow tomcat6_t proc_net_t:file { read getattr open };
+allow tomcat6_t proc_t:file { read getattr open };
+allow tomcat6_t random_device_t:chr_file { read getattr open };
+allow tomcat6_t self:netlink_route_socket { bind create getattr nlmsg_read };
+allow tomcat6_t self:process { execmem signal };
+allow tomcat6_t self:tcp_socket { setopt bind create getattr accept ioctl connect shutdown getopt listen };
+allow tomcat6_t self:udp_socket { getattr ioctl create connect };
+allow tomcat6_t sysfs_t:dir { read search open };
+allow tomcat6_t tomcat6_exec_t:file execute_no_trans;
+allow tomcat6_t tomcat6_var_lib_t:dir { write search read remove_name open getattr };
+allow tomcat6_t tomcat6_var_lib_t:file { read getattr unlink open append };
+allow tomcat6_t tomcat6_var_lib_t:lnk_file read;
+allow tomcat6_t urandom_device_t:chr_file { read getattr open };
+allow tomcat6_t user_home_dir_t:dir search;
+allow tomcat6_t user_home_t:dir search;
+allow tomcat6_t user_home_t:file { read open };
+allow tomcat6_t var_lib_t:dir { read write };
+allow tomcat6_t var_lib_t:file { read getattr open append };
+allow tomcat6_t var_lib_t:lnk_file { read getattr };
+

@@ -1,0 +1,177 @@
+## Author: Jani Heinonen / Profit Consulting Oy
+##         email: jani.heinonen@profitconsulting.fi
+##         phone: +358 50 313 4292
+##
+##  <summary>policy for PHP-FPM</summary>
+#
+
+#####################################################
+## <summary>
+##  Transition to php-fpm domain
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed to transition
+## </summary>
+## </param>
+#
+interface(`phpfpm_domtrans'.`
+    gen_require(`
+        type phpfpm_t, phpfpm_exec_t;
+    ')
+
+    corecmd_search_bin($1)
+    domtrans_pattern($1, phpfpm_exec_t, phpfpm_t)
+')
+
+#####################################################
+## <summary>
+##  Execute php-fpm in php-fpm domain
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+#
+interface(`phpfpm_initrc_domtrans',`
+    gen_require(`
+        type phpfpm_initrc_exec_t;
+    ')
+
+    init_labeled_script_domtrans($1, phpfpm_initrc_exec_t;
+')
+
+#####################################################
+## <summary>
+##  search php-fpm conf directories
+## </summary>
+## <param name="domain"
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+#
+interface(`phpfpm_search_conf',`
+    gen_require(`
+        type phpfpm_etc_t;
+    ')
+
+    allow $1 phpfpm_etc_t:dir search_dir_perms;
+    files_search_etc($1)
+')
+
+#####################################################
+## <summary>
+##  read php-fpm conf files
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+#
+interface(´phpfpm_read_conf_files',`
+    gen_require(`
+        type phpfpm_etc_t;
+')
+
+    allow $1 phpfpm_etc_t:file read_file_perms;
+    allow $1 phpfpm_etc_t:dir list_dir_perms;
+    files_search_etc($1)
+')
+
+#####################################################
+## <summary>
+##  read php-fpm log files
+## </summary>
+## <param name="domain">
+## <summary>
+## Domain allowed access
+## </summary>
+## </param>
+#
+interface(`phpfpm_read_log',`
+    gen_require(`phpfpm_log_t;
+')
+
+    logging_search_logs($1)
+    read_files_pattern($1, phpfpm_log_t, phpfpm_log_t)
+')
+
+#####################################################
+## <summary>
+##  Append to php-fpm log files
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+#
+interface(`phpfpm_append_log',`
+    gen_require(`phpfpm_log_t;
+')
+
+    logging_search_logs($1)
+    append_files_pattern($1, phpfpm_log_t, phpfpm_log_t)
+')
+
+#####################################################
+## <summary>
+##  manage php-fpm log files
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+#
+interface(`phpfpm_manage_log',`
+    gen_require(`phpfpm_log_t;
+')
+
+    loggin_search_logs($1)
+    manage_dirs_pattern($1, phpfpm_log_t, phpfpm_log_t)
+    manage_files_pattern($1, phpfpm_log_t, phpfpm_log_t)
+    manage_lnk_files_pattern($1, phpfpm_log_t, phpfpm_log_t)
+')
+
+#####################################################
+## <summary>
+##  All of the rules required to administrate
+##  an php-fpm environment
+## </summary>
+## <param name="domain">
+## <summary>
+##  Domain allowed access
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##  Role allowed access
+## </summary>
+## </param>
+## </rolecap>
+interface(`phpfpm_admin',`
+    gen_require(`
+    type phpfpm_t;
+    type phpfpm_etc_t;
+    type phpfpm_log_t;
+    type phpfpm_initrc_exec_t;
+')
+
+    allow $1 phpfpm_t:process { ptrace signal_perms };
+    ps_process_patter($1, phpfpm_t)
+
+    phpfpm_initrc_domtrans($1)
+    domain_system_change_exemption($1)
+    role transition $2 phpfpm_initrc_exec_t system_r;
+    allow $2 system_r;
+
+    files_search_etc($1)
+    admin_pattern($1, phpfpm_etc_t)
+    
+    logging_search_logs($1)
+    admin_pattern($1, phpfpm_log_t)
+')

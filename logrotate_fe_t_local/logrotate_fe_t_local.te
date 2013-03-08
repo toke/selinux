@@ -1,0 +1,26 @@
+policy_module(logrotate_fe_t_local, 0.0.1)
+
+# Author: Jani Heinonen / Profit Consulting Oy
+#         email: jani.heinonen@profitconsulting.fi
+#         phone: +358 50 313 4292
+
+
+#####################################################
+#
+#   requirements
+#
+require {
+    type etc_t;
+    type logrotate_t;
+    type httpd_sys_content_t;
+    class dir { write remove_name add_name read write };
+    class file { rename create unlink open setattr read getattr write ioctl };
+}
+
+#####################################################
+#
+#   logrotate_t_local policy
+#
+allow logrotate_t etc_t:file { execute execute_no_trans };
+allow logrotate_t httpd_sys_content_t:dir { read write add_name remove_name };
+allow logrotate_t httpd_sys_content_t:file { rename setattr read create getattr write ioctl unlink open };

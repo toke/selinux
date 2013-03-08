@@ -1,0 +1,38 @@
+policy_module(integ_batch_local, 0.0.1)
+
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+########################################
+#
+# requirements
+#
+require {
+    type unconfined_java_t;
+    type integ_batch_t;
+}
+
+########################################
+#
+# Declarations
+#
+
+type integ_batch_t;
+type integ_batch_exec_t;
+init_daemon_domain(integ_batch_t, integ_batch_exec_t)
+
+permissive integ_batch_t;
+
+type integ_batch_initrc_exec_t;
+init_script_file(integ_batch_initrc_exec_t)
+
+type integ_batch_var_lib_t;
+files_type(integ_batch_var_lib_t)
+
+###########################################
+# 
+# integ_batch local policy
+#
+

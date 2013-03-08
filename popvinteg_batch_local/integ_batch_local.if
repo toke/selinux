@@ -1,0 +1,185 @@
+# Author: Jani Heinonen / Profit Consulting Oy
+# #         email: jani.heinonen@profitconsulting.fi
+# #         phone: +358 50 313 4292
+#
+
+
+## <summary> Policy for integ_batch </summary>
+
+########################################
+#### <summary>
+####      Transition to popvinteg-batch.
+#### </summary>
+#### <param name="domain">
+#### <summary>
+####      Domain allowed to transition.
+#### </summary>
+#### </param>
+###
+interface(`integ_batch_domtrans',`
+    gen_require(`
+        type integ_batch_t, integ_batch_exec_t;
+  ')
+
+   corecmd_search_var_lib($1)
+        domtrans_pattern($1, integ_batch_exec_t, integ_batch_t)
+')
+
+
+#################################################
+## <summary>
+##      Execute integ_batch server in 
+##      integ_batch domain
+## </summary>
+## <param name=domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`integ_batch_initrc_domtrans',`
+    gen_require(`
+        type integ_batch_initrc_exec_t;
+    ')
+
+    init_labeled_script_domtrans($1, integ_batch_initrc_exec_t)
+')
+
+##################################################
+## <summary>
+##      Search /var/lib/popvinteg**
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`integ_batch_search_lib',`
+    gen_require(`
+        type integ_batch_var_lib_t;
+    ')
+
+    allow $1 integ_batch_var_lib_t:dir search_dir_perms;
+    files_search_var_lib($1)
+')
+
+##################################################
+## <summary>
+##      Read /var/lib/popvinteg*
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`integ_batch_read_lib_files',`
+    gen_require(`
+        type integ_batch_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    read_files_pattern($1, integ_batch_var_lib_t, integ_batch_var_lib_t)
+')
+
+#################################################
+## <summary>
+##      Manage /var/lib/popvinteg* files
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`integ_batch_manage_lib_files',`
+    gen_require(`
+        type integ_batch_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    manage_files_pattern($1, integ_batch_var_lib_t, integ_batch_var_lib_t)
+')
+
+###############################################
+## <summary>
+##      manage /var/lib/popvinteg* dirs
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access
+## </summary>
+## </param>
+#
+interface(`integ_batch_manage_lib_dirs',`
+    gen_require(`
+        type integ_batch_var_lib_t;
+    ')
+
+    files_search_var_lib($1)
+    manage_dirs_pattern($1, integ_batch_var_lib_t, integ_batch_var_lib_t)
+')
+
+###############################################
+## <summary>
+##      Execute integ_batch in integ_batch
+##      domain and allow the specific role to
+##      integ_batch domain
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      The role allowed to access integ_batch
+##      domain
+## </summary>
+## </param>
+#
+interace(`integ_batch_run',`
+    gen_require(`
+        type integ_batch_t;
+    ')
+
+    integ_batch_domtrans($1)
+    role $2 types integ_batch_t;
+')
+
+###############################################
+## <summary>
+##      All of the rules required to administrate
+##      an integ_batch environment
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed access.
+## </summary>
+## </param>
+## <param name="role">
+## <summary>
+##      Role allowed access.
+## </summary>
+## </param>
+## <rolecap/>
+#
+interface(`integ_batch_admin',`
+    gen_require(`
+        type integ_batch_t;
+        type integ_batch_initrc_exec_t;
+        type integ_batch_var_lib_t;
+    ')
+
+    allow $1 integ_batch_t:process { ptrace signal_perms };
+    ps_process_pattern($1, integ_batch_t)
+
+    integ_batch_initrc_domtrans($1)
+    domain_system_change_exemption($1)
+    role_transition $2 integ_batch_initrc_exec_t system_r;
+    allow $2 system_r;
+
+    files_search_var_lib($1)
+    admin_pattern($1, integ_batch_var_lib_t)
+')
