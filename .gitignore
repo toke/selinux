@@ -1,2 +1,5 @@
 ### ignored extensios
 *.pp
+
+### ignored folders
+deltagon_local/
