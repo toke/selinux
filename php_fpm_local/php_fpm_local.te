@@ -12,6 +12,8 @@ require {
     type phpfpm_t;
     type file_t;
     type httpd_var_run_t;
+    type httpd_t;
+    type initrc_t;
     type locale_t;
     type mysqld_port_t;
     type node_t;
@@ -38,7 +40,7 @@ require {
     type ldap_port_t;
     class dir { write search add_name read open getattr remove_name };
     class file { write getattr read lock create open unlink execute execute_no_trans rename setattr append };
-    class capability { sys_ptrace setuid sys_nice setgid kill };
+    class capability { sys_ptrace setuid sys_nice setgid kill chown };
     class netlink_route_socket { bind create getattr nlmsg_read };
     class process { ptrace setsched signal sigkill setrlimit };
     class tcp_socket { setopt bind create accept connect shutdown getopt listen node_bind name_bind ioctl name_connect };
@@ -46,7 +48,8 @@ require {
     class chr_file { read open getattr };
     class lnk_file { read };
     class fifo_file { read write getattr ioctl open };
-    class sock_file { write create unlink };
+    class sock_file { write create unlink setattr };
+    class unix_stream_socket connectto;
 }
 
 
@@ -93,6 +96,14 @@ corenet_tcp_connect_http_port(phpfpm_t)
 corenet_tcp_connect_memcache_port(phpfpm_t)
 sysnet_read_config(phpfpm_t)
 
+#============= httpd_t ==============
+allow httpd_t initrc_t:unix_stream_socket connectto;
+allow httpd_t var_run_t:sock_file write;
+allow httpd_t phpfpm_t:unix_stream_socket connectto;
+
+#============= phpfpm_t ==============
+allow phpfpm_t self:capability chown;
+allow phpfpm_t var_run_t:sock_file { create setattr };
 allow phpfpm_t httpd_var_run_t:dir { write search add_name open remove_name read };
 allow phpfpm_t httpd_var_run_t:file { write getattr read lock create open unlink };
 allow phpfpm_t locale_t:dir { read search open getattr };
