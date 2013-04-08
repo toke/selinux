@@ -1,4 +1,4 @@
-policy_module(php_fpm_local 0.1.5)
+policy_module(php_fpm_local 0.1.6)
 
 # Author: Jani Heinonen / Profit Consulting Oy
 #         email: jani.heinonen@profitconsulting.fi
