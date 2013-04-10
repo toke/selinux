@@ -1,4 +1,4 @@
-policy_module(nginx_fe_local, 0.0.2)
+policy_module(nginx_proxy_local, 0.0.3)
 # Author: Jani Heinonen / Profit Consulting Oy
 # #         email: jani.heinonen@profitconsulting.fi
 # #         phone: +358 50 313 4292
